@@ -35,12 +35,12 @@ export default function CustomDrawer(props){
             <ItemText active={activeRoute === 'Home'}>Home</ItemText>
           </Item>
 
-          <Item active={activeRoute === 'Register'} onPress={() => handleNavigate('Register')}>
-            <ItemText active={activeRoute === 'Register'}>Registrar</ItemText>
+          <Item active={activeRoute === 'Registrar'} onPress={() => handleNavigate('Registrar')}>
+            <ItemText active={activeRoute === 'Registrar'}>Registrar</ItemText>
           </Item>
 
-          <Item active={activeRoute === 'Meu Perfil'} onPress={() => handleNavigate('Meu Perfil')}>
-            <ItemText active={activeRoute === 'Meu Perfil'}>Meu perfil</ItemText>
+          <Item active={activeRoute === 'Profile'} onPress={() => handleNavigate('Profile')}>
+            <ItemText active={activeRoute === 'Profile'}>Meu perfil</ItemText>
           </Item>
         </Menu>
       </Container>

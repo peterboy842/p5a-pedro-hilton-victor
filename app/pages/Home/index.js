@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity, Alert, Modal, View, Text } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import api from '../../services/api';
 import { AuthContext } from '../../context/auth';
@@ -21,7 +22,8 @@ import {
   MovementValue,
   MovementDescription,
   SectionTitle,
-  Row
+  Row,
+  DeleteIcon
 } from './styles';
 
 export default function Home(){
@@ -30,38 +32,96 @@ export default function Home(){
 
   const [balance, setBalance] = useState({ total: 0, entradas: 0, saidas: 0 });
   const [movements, setMovements] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  useEffect(() => {
-    async function loadData(){
-      try{
-        const respBal = await api.get('/balance');
-        // expect respBal.data to contain { total, entradas, saidas }
-        setBalance(respBal.data);
-      }catch(err){
-        // fallback: keep zeros
-      }
 
-      try{
-        const respMov = await api.get('/receives');
-        // expect array of records
-        setMovements(respMov.data || []);
-      }catch(err){
-        // fallback sample data
-        setMovements([
-          { id: '1', description: 'Supermercado', value: 35.30, type: 'despesa' },
-          { id: '2', description: 'Salário', value: 780.30, type: 'receita' },
-          { id: '3', description: 'Freelance', value: 50.00, type: 'receita' },
-          { id: '4', description: 'Conta luz', value: 155.90, type: 'despesa' }
-        ]);
-      }
-    }
+   async function loadData() {
+    const dateToday = new Date().toLocaleDateString("pt-BR");
 
-    loadData();
-  }, []);
+    try {
+      const respBal = await api.get('/balance', {
+        params: { date: dateToday }
+      });
+      setBalance(respBal.data || []);
+    } catch (err) {}
+
+    try {
+      const respMov = await api.get('/receives', {
+        params: { date: dateToday }
+      });
+      setMovements(respMov.data || []);
+    } catch (err) {}
+  }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   function openMenu(){
     navigation.openDrawer();
   }
+
+  function handleDeleteItem(item){
+    setModalVisible(true)
+    setSelectedItem(item);
+  }
+
+ 
+  async function deleteItem(id) {
+    try {
+      await api.delete(`/receives/delete?item_id=${id}`);
+
+      setMovements(prev => prev.filter(item => item.id !== id));
+      setModalVisible(false);
+      await loadData();
+    } catch (err) {
+      console.log("Erro ao deletar:", err);
+    }
+  }
+
+  function ModalDelete({ visible, onClose, onConfirm }) {
+    return (
+      <Modal visible={visible} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.4)",
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+          
+          <View style={{
+            width: "80%",
+            backgroundColor: "#FFF",
+            padding: 20,
+            borderRadius: 8
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 20 }}>
+              Atenção!
+            </Text>
+
+            <Text style={{ marginBottom: 20 }}>
+              Você tem certeza que deseja deletar esse registro?
+            </Text>
+
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <TouchableOpacity onPress={onClose}>
+                <Text style={{ color: "#555", fontSize: 16 }}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={onConfirm}>
+                <Text style={{ color: "red", fontSize: 16 }}>Deletar</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
 
   return (
     <Background>
@@ -98,7 +158,12 @@ export default function Home(){
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <MovementCard>
+               
+
               <Row>
+                <TouchableOpacity onPress={() => handleDeleteItem(item)} >
+                  <Icon name="delete" size={28} color="#ff4040" />
+                </TouchableOpacity>
                 <MovementTag type={item.type}>{item.type === 'receita' ? 'receita' : 'despesa'}</MovementTag>
                 <MovementDescription>{item.description}</MovementDescription>
               </Row>
@@ -106,6 +171,11 @@ export default function Home(){
               <MovementValue type={item.type}>R$ {Number(item.value).toFixed(2)}</MovementValue>
             </MovementCard>
           )}
+        />
+        <ModalDelete
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onConfirm={() => deleteItem(selectedItem.id)}
         />
       </Container>
     </Background>

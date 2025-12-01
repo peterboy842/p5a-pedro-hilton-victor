@@ -78,3 +78,29 @@ export const TypeButtonText = styled.Text`
 `;
 
 
+export const WelcomeText = styled.Text`
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+`;
+
+export const ActionButton = styled.TouchableOpacity`
+  width: 90%;
+  height: 50px;
+  border-radius: 4px;
+  justify-content: center;
+  align-items: center;
+  background-color: #00b94a;
+  margin-bottom: 16px;
+`;
+
+export const ActionButtonText = styled.Text`
+  color: #FFF;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+

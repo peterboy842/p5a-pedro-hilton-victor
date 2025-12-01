@@ -100,3 +100,13 @@ export const MovementValue = styled.Text`
   color: ${props => props.type === 'receita' ? '#00C851' : '#FF5252'};
   font-weight: 700;
 `;
+
+export const DeleteIcon = styled.View`
+  width: 22px;
+  height: 22px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+  border-color: #c0392b;
+  transform: rotate(45deg);
+  margin-left: 12px;
+`;
